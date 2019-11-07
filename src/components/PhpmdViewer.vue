@@ -25,10 +25,15 @@
    <input class="input" type="text" placeholder="Filter Filename" v-model="filterName">
    <hr>
    <nav class="panel" v-for="(file, index) in filteredData" v-bind:key="index">
-     <p class="panel-heading">
+     <p class="panel-heading" :style="{backgroundColor: calculateBackgroundColor(file.complexityRatio)}" @click='toggleDetails(file.name)'>
         {{file.name}}
     </p>
-        <div class="panel-block" v-for="(violations, functionName ) in file.functions" v-bind:key="functionName">
+    <div v-show="details[file.name]">
+        <div
+         class="panel-block"
+         v-for="(violations, functionName ) in file.functions"
+         v-bind:key="functionName"
+         >
             <p>{{functionName}}:</p>
             <table class="table is-striped is-bordered">
               <thead>
@@ -39,14 +44,14 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(violation) in violations" v-bind:key="violation.rule" :style="{backgroundColor: calculateBackgroundColor(violation.value, violation.threshold)}">
+                <tr v-for="(violation) in violations" v-bind:key="violation.rule" :style="{backgroundColor: calculateBackgroundColor(violation.value/violation.threshold)}">
                   <td>{{violation.rule}}</td>
                   <td>{{violation.value}}</td>
                   <td>{{violation.threshold}}</td>
                 </tr>
               </tbody>
             </table>
-        </div>
+        </div></div>
    </nav></div>
   </div>
   </section>
@@ -62,6 +67,7 @@ export default {
       filterName: '',
       status: 'init',
       errors: [],
+      details: {},
     }
   },
   computed: {
@@ -71,8 +77,7 @@ export default {
         })
     },
   }, methods: { 
-    calculateBackgroundColor: function(value, threshold) {
-      const ratio = value / threshold
+    calculateBackgroundColor: function(ratio) {
       if (ratio > 1.2) {
         return 'darkRed'
       }
@@ -102,6 +107,7 @@ export default {
           self.rawData = data
           const mapped = data.files.reduce((result, file) => {
           const name = file.file;
+          let complexityRatio = 0
           const functions = {}
           file.violations.forEach(violation => {
             if(violation.function && !functions[violation.function]) {
@@ -114,6 +120,7 @@ export default {
               functions[`Class_${violation.class}`] = []
             }
             const numbers = violation.description.match(/^\d+|\d+\b|\d+(?=\w)/g);
+            complexityRatio += numbers[0] / numbers[1]
             const violationObject = {
               rule: violation.rule,
               value: numbers[0],
@@ -129,7 +136,8 @@ export default {
               functions[`Class_${violation.class}`].push(violationObject)
             }
           });
-          result.push({name, functions})
+          complexityRatio = complexityRatio / file.violations.length
+          result.push({name, functions, complexityRatio})
           return result
         }, [])
         self.phpmdData = mapped;
@@ -139,6 +147,14 @@ export default {
           }
       }
       reader.readAsText(file);
+    },
+    toggleDetails: function(name) {
+      if(this.details[name]) {
+        this.details[name] = false
+      } else {
+        this.details[name] = true
+      }
+      this.details = { ...this.details } // immutablity
     }
   }
 }
