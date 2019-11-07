@@ -9,7 +9,7 @@
    <div v-if="phpmdData">
    <input class="input" type="text" placeholder="Filter Filename" v-model="filterName">
    <hr>
-   <nav class="panel" v-for="(file, index) in phpmdData" v-bind:key="index">
+   <nav class="panel" v-for="(file, index) in filteredData" v-bind:key="index">
      <p class="panel-heading">
         {{file.name}}
     </p>
@@ -24,7 +24,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(violation) in violations" v-bind:key="violation.rule">
+                <tr v-for="(violation) in violations" v-bind:key="violation.rule" :style="{backgroundColor: calculateBackgroundColor(violation.value, violation.threshold)}">
                   <td>{{violation.rule}}</td>
                   <td>{{violation.value}}</td>
                   <td>{{violation.threshold}}</td>
@@ -47,25 +47,51 @@ export default {
       filterName: ''
     }
   },
-  methods: {
+  computed: {
+    filteredData: function() {
+        return this.phpmdData.filter(item => {
+          return item.name.includes(this.filterName)
+        })
+    },
+  }, methods: { 
+    calculateBackgroundColor: function(value, threshold) {
+      const ratio = value / threshold
+      if (ratio > 1.2) {
+        return 'darkRed'
+      }
+      if (ratio > 1) { 
+        return 'red'
+      }
+      if (ratio > 0.8) {
+        return 'DarkOrange'
+      }
+      if (ratio > 0.6) {
+        return 'orange'
+      }
+      if (ratio > 0.3) {
+        return 'yellow'
+      }
+      return 'green'
+    },
     processFile: function(event) {
-      let file = event.target.files[0];
+       let file = event.target.files[0];
       const reader = new FileReader();
       const self = this
       reader.onload = function(e) {
         const data = JSON.parse(e.target.result)
+        self.rawData = data
         const mapped = data.files.reduce((result, file) => {
         const name = file.file;
-        if(self.filterName)
-        {
-          if (!name.includes(this.filterName)) {
-            return result
-          }
-        }
         const functions = {}
         file.violations.forEach(violation => {
-          if(!functions[violation.function]) {
+          if(violation.function && !functions[violation.function]) {
             functions[violation.function] = []
+          }
+          if(violation.method && !functions[violation.method]) {
+            functions[violation.method] = []
+          }
+          if(violation.class && !violation.method && !functions[violation.class]) {
+            functions[`Class_${violation.class}`] = []
           }
           const numbers = violation.description.match(/^\d+|\d+\b|\d+(?=\w)/g);
           const violationObject = {
@@ -73,7 +99,15 @@ export default {
             value: numbers[0],
             threshold: numbers[1],
           }
-          functions[violation.function].push(violationObject)
+          if(violation.function) {
+            functions[violation.function].push(violationObject)
+          }
+          if(violation.method) {
+            functions[violation.method].push(violationObject)
+          } 
+          if(violation.class && !violation.method) {
+            functions[`Class_${violation.class}`].push(violationObject)
+          }
         });
         result.push({name, functions})
         return result
