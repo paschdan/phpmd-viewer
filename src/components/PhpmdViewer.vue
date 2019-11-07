@@ -2,9 +2,12 @@
   <section class="section">
   <div class="container">
    <h1 class="title">PHPMD Violations</h1>
-   <div v-if="!phpmdData">
+   <div v-if="status == 'init'">
    <h2>Upload a File phpmd json file</h2>
    <input type="file" @change="processFile($event)">
+   </div>
+   <div v-if="status == 'analyzing'">
+     Analizing the file...
    </div>
    <div v-if="phpmdData">
    <input class="input" type="text" placeholder="Filter Filename" v-model="filterName">
@@ -44,7 +47,8 @@ export default {
     return {
       phpmdData: '',
       rawData: '',
-      filterName: ''
+      filterName: '',
+      status: 'init'
     }
   },
   computed: {
@@ -77,6 +81,7 @@ export default {
        let file = event.target.files[0];
       const reader = new FileReader();
       const self = this
+      self.status = 'analyzing'
       reader.onload = function(e) {
         const data = JSON.parse(e.target.result)
         self.rawData = data
@@ -113,6 +118,7 @@ export default {
         return result
       }, [])
       self.phpmdData = mapped;
+      self.status = 'display'
       }
       reader.readAsText(file);
     }
