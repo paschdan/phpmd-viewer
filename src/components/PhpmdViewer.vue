@@ -2,9 +2,21 @@
   <section class="section">
   <div class="container">
    <h1 class="title">PHPMD Violations</h1>
-   <div v-if="status == 'init'">
+    <article class="message is-danger" v-if="errors.length > 0">
+    <div class="message-header">
+      <p>An Error occured</p>
+      <button class="delete" aria-label="delete" @click="errors = []; status='init'"></button>
+    </div>
+    <div class="message-body">
+      <p v-for="(error, index) in errors" v-bind:key="index">
+        {{error}}
+      </p>
+    </div>
+  </article>
+   <div v-if="!phpmdData">
    <h2>Upload a File phpmd json file</h2>
-   <input type="file" @change="processFile($event)">
+   <input type="file" @change="processFile($event)" accept=".json, .JSON">
+
    </div>
    <div v-if="status == 'analyzing'">
      Analizing the file...
@@ -48,7 +60,8 @@ export default {
       phpmdData: '',
       rawData: '',
       filterName: '',
-      status: 'init'
+      status: 'init',
+      errors: [],
     }
   },
   computed: {
@@ -83,42 +96,47 @@ export default {
       const self = this
       self.status = 'analyzing'
       reader.onload = function(e) {
-        const data = JSON.parse(e.target.result)
-        self.rawData = data
-        const mapped = data.files.reduce((result, file) => {
-        const name = file.file;
-        const functions = {}
-        file.violations.forEach(violation => {
-          if(violation.function && !functions[violation.function]) {
-            functions[violation.function] = []
+        let data
+        try {
+          data = JSON.parse(e.target.result)
+          self.rawData = data
+          const mapped = data.files.reduce((result, file) => {
+          const name = file.file;
+          const functions = {}
+          file.violations.forEach(violation => {
+            if(violation.function && !functions[violation.function]) {
+              functions[violation.function] = []
+            }
+            if(violation.method && !functions[violation.method]) {
+              functions[violation.method] = []
+            }
+            if(violation.class && !violation.method && !functions[violation.class]) {
+              functions[`Class_${violation.class}`] = []
+            }
+            const numbers = violation.description.match(/^\d+|\d+\b|\d+(?=\w)/g);
+            const violationObject = {
+              rule: violation.rule,
+              value: numbers[0],
+              threshold: numbers[1],
+            }
+            if(violation.function) {
+              functions[violation.function].push(violationObject)
+            }
+            if(violation.method) {
+              functions[violation.method].push(violationObject)
+            } 
+            if(violation.class && !violation.method) {
+              functions[`Class_${violation.class}`].push(violationObject)
+            }
+          });
+          result.push({name, functions})
+          return result
+        }, [])
+        self.phpmdData = mapped;
+        self.status = 'display'
+        } catch (err) {
+          self.errors.push('Invalid File')
           }
-          if(violation.method && !functions[violation.method]) {
-            functions[violation.method] = []
-          }
-          if(violation.class && !violation.method && !functions[violation.class]) {
-            functions[`Class_${violation.class}`] = []
-          }
-          const numbers = violation.description.match(/^\d+|\d+\b|\d+(?=\w)/g);
-          const violationObject = {
-            rule: violation.rule,
-            value: numbers[0],
-            threshold: numbers[1],
-          }
-          if(violation.function) {
-            functions[violation.function].push(violationObject)
-          }
-          if(violation.method) {
-            functions[violation.method].push(violationObject)
-          } 
-          if(violation.class && !violation.method) {
-            functions[`Class_${violation.class}`].push(violationObject)
-          }
-        });
-        result.push({name, functions})
-        return result
-      }, [])
-      self.phpmdData = mapped;
-      self.status = 'display'
       }
       reader.readAsText(file);
     }
