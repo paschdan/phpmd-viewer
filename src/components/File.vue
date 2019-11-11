@@ -1,5 +1,5 @@
 <template>
-  <nav class="panel" >
+  <nav class="panel">
     <p
       class="panel-heading"
       :style="{
@@ -49,9 +49,9 @@
 export default {
   name: "File",
   data: function() {
-      return {
-        showDetails: false
-      }
+    return {
+      showDetails: false
+    };
   },
   methods: {
     calculateBackgroundColor: function(ratio) {
