@@ -2,24 +2,7 @@
   <section class="section">
     <div class="container">
       <h1 class="title">PHPMD Violations</h1>
-      <article class="message is-danger" v-if="errors.length > 0">
-        <div class="message-header">
-          <p>An Error occured</p>
-          <button
-            class="delete"
-            aria-label="delete"
-            @click="
-              errors = [];
-              status = 'init';
-            "
-          ></button>
-        </div>
-        <div class="message-body">
-          <p v-for="(error, index) in errors" v-bind:key="index">
-            {{ error }}
-          </p>
-        </div>
-      </article>
+      <Error :errors='errors' @closeError="errors=[]"/>
       <div v-if="!phpmdData">
         <h2>Upload a File phpmd json file</h2>
         <input
@@ -47,6 +30,7 @@
 
 <script>
 import File from './File'
+import Error from './Error'
 
 export default {
   name: "PhpmdViewer",
@@ -137,7 +121,8 @@ export default {
     }
   },
   components: {
-    File
+    File,
+    Error
   }
 };
 </script>
