@@ -11,7 +11,7 @@
               }"
             ></i>
           </span>
-          <span>{{ file.name }} ({{ file.complexityRatio }})</span>
+          <span>{{ file.name }} ({{ file.complexityRatio | formatFloat }})</span>
         </div>
         <div class="tile is-child has-text-left" v-show="showDetails"
         v-for="(violations, functionName) in file.functions"
@@ -76,7 +76,13 @@ export default {
       return "green";
     }
   },
-  props: ["file"]
+  props: ["file"],
+  filters: {
+    formatFloat: function(value) {
+      if (!value) return ''
+      return Math.round(value * 100) / 100;
+    }
+  }
 };
 </script>
 
