@@ -24,6 +24,16 @@
               </span>
             </p>
           </div>
+          <p class="panel-tabs">
+            <a 
+            :class="{'is-active': sortMethod === 'filename'}"
+            @click="sortMethod='filename'"
+            >Sort by Filename</a>
+            <a
+            :class="{'is-active': sortMethod === 'threshold'}"
+            @click="sortMethod='threshold'"
+            >Sort by Threshold Ratio</a>
+          </p>
           <File
             v-for="(file, index) in filteredData"
             v-bind:key="index"
@@ -48,15 +58,35 @@ export default {
       rawData: "",
       filterName: "",
       status: "init",
+      sortMethod: "filename",
       errors: [],
       details: {}
     };
   },
   computed: {
     filteredData: function() {
-      return this.phpmdData.filter(item => {
+      const filtered = this.phpmdData.filter(item => {
         return item.name.includes(this.filterName);
       });
+      const sortMethod = this.sortMethod
+      const sorted = filtered.sort((a, b) => {
+        if(sortMethod === 'threshold') {
+          console.log('sorting by threshold')
+          return b.complexityRatio - a.complexityRatio
+        } else {
+          const aName = a.name.toUpperCase()
+          const bName = b.name.toUpperCase()
+          if (aName < bName) {
+            return -1;
+          }
+          if (aName > bName) {
+            return 1;
+          }
+          return 0;
+        }
+      })
+      return sorted
+
     }
   },
   methods: {
