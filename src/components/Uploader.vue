@@ -48,7 +48,7 @@ export default {
                 functions[`Class_${violation.class}`] = [];
               }
               const numbers = violation.description.match(
-                /^\d+|\d+\b|\d+(?=\w)/g
+                /\b\d+\b/g
               );
               complexityRatio += numbers[0] / numbers[1];
               const violationObject = {

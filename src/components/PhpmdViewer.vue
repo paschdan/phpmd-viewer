@@ -71,7 +71,6 @@ export default {
       const sortMethod = this.sortMethod
       const sorted = filtered.sort((a, b) => {
         if(sortMethod === 'threshold') {
-          console.log('sorting by threshold')
           return b.complexityRatio - a.complexityRatio
         } else {
           const aName = a.name.toUpperCase()
