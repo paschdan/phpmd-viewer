@@ -22,6 +22,7 @@
         <table class="table is-striped is-bordered">
           <thead>
             <tr>
+              <td></td>
               <td>Rule</td>
               <td>Amount</td>
               <td>Threshold</td>
@@ -31,12 +32,14 @@
             <tr
               v-for="(violation, index) in violations"
               v-bind:key="index"
+            >
+              <td
               :style="{
                 backgroundColor: calculateBackgroundColor(
                   violation.value / violation.threshold
                 )
               }"
-            >
+              ><span class="icon"></span></td>
               <td>{{ violation.rule }}</td>
               <td>{{ violation.value }}</td>
               <td>{{ violation.threshold }}</td>
@@ -50,6 +53,7 @@
 </template>
 
 <script>
+import {} from 'bulma'
 export default {
   name: "File",
   data: function() {
