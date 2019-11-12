@@ -1,20 +1,22 @@
 <template>
-  <nav class="panel">
-    <p
-      class="panel-heading"
-      :style="{
-        backgroundColor: calculateBackgroundColor(file.complexityRatio)
-      }"
-      @click="showDetails = !showDetails"
-    >
-      {{ file.name }}
-    </p>
-    <div v-show="showDetails">
-      <div
-        class="panel-block"
+  <div class="panel-block" @click="showDetails = !showDetails">
+    <div class="tile is-ancestor is-gapless">
+      <div class="tile is-vertical is-parent">
+        <div class="tile is-child has-text-left">
+          <span class="icon is-left">
+            <i
+              class="fa fa-circle"
+              :style="{
+                color: calculateBackgroundColor(file.complexityRatio)
+              }"
+            ></i>
+          </span>
+          <span>{{ file.name }} ({{ file.complexityRatio }})</span>
+        </div>
+        <div class="tile is-child has-text-left" v-show="showDetails"
         v-for="(violations, functionName) in file.functions"
         v-bind:key="functionName"
-      >
+        >
         <p>{{ functionName }}:</p>
         <table class="table is-striped is-bordered">
           <thead>
@@ -40,9 +42,10 @@
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
     </div>
-  </nav>
+    </div>
 </template>
 
 <script>
@@ -76,3 +79,16 @@ export default {
   props: ["file"]
 };
 </script>
+
+<style lang="scss">
+.tile.is-gapless {
+  
+  .tile.is-vertical>.tile.is-child {
+    margin-bottom: 0 !important;
+  }
+  
+  .notification {
+    border-radius: 0;
+  }
+}
+</style>

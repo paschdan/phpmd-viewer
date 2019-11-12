@@ -9,18 +9,27 @@
         @Error="handleError"
       />
       <div v-if="phpmdData">
-        <input
-          class="input"
-          type="text"
-          placeholder="Filter Filename"
-          v-model="filterName"
-        />
-        <hr />
-        <File
-          v-for="(file, index) in filteredData"
-          v-bind:key="index"
-          :file="file"
-        />
+        <div class="panel">
+          <p class="panel-heading">Violations in File</p>
+          <div class="panel-block">
+            <p class="control has-icons-left">
+              <input
+                class="input"
+                type="text"
+                placeholder="Filter Filename"
+                v-model="filterName"
+              />
+              <span class="icon is-left">
+                <i class="fas fa-search" aria-hidden="true"></i>
+              </span>
+            </p>
+          </div>
+          <File
+            v-for="(file, index) in filteredData"
+            v-bind:key="index"
+            :file="file"
+          />
+        </div>
       </div>
     </div>
   </section>
