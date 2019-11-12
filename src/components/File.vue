@@ -29,8 +29,8 @@
           </thead>
           <tbody>
             <tr
-              v-for="violation in violations"
-              v-bind:key="violation.rule"
+              v-for="(violation, index) in violations"
+              v-bind:key="index"
               :style="{
                 backgroundColor: calculateBackgroundColor(
                   violation.value / violation.threshold
