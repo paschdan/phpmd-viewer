@@ -1,5 +1,5 @@
 <template>
-  <div class="panel-block" @click="showDetails = !showDetails">
+  <div class="panel-block" >
     <div class="tile is-ancestor is-gapless">
       <div class="tile is-vertical is-parent">
         <div class="tile is-child has-text-left">
@@ -12,6 +12,7 @@
             ></i>
           </span>
           <span>{{ file.name }} ({{ file.complexityRatio | formatFloat }})</span>
+          <a><span class="icon is-pulled-right link" @click="showDetails = !showDetails"><i class="fa fa-chevron-down"></i></span></a>
         </div>
         <div class="tile is-child has-text-left" v-show="showDetails"
         v-for="(violations, functionName) in file.functions"
